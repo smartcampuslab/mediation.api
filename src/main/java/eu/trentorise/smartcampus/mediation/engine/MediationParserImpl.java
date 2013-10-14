@@ -1,16 +1,18 @@
 package eu.trentorise.smartcampus.mediation.engine;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import eu.trentorise.smartcampus.mediation.model.CommentBaseEntity;
 import eu.trentorise.smartcampus.mediation.model.MessageToMediationService;
 import eu.trentorise.smartcampus.mediation.util.MediationConstant;
-import eu.trentorise.smartcampus.network.JsonUtils;
+import eu.trentorise.smartcampus.mediation.util.TextReader;
 import eu.trentorise.smartcampus.network.RemoteConnector;
 import eu.trentorise.smartcampus.network.RemoteException;
 
@@ -20,6 +22,9 @@ public class MediationParserImpl {
 	private String urlServermediation;
 	private String webappname;
 	private String client_token="blabla";
+	
+	private static final Logger logger = Logger
+			.getLogger(MediationParserImpl.class);
 	
 	public MediationParserImpl(){}
 
@@ -52,12 +57,16 @@ public class MediationParserImpl {
 		
 		boolean isApproved=true;
 		
-		while(index.hasNext() && isApproved){		
+		while(index.hasNext() && isApproved){	
+			Calendar cal = Calendar.getInstance();
+			long before = cal.getTimeInMillis();
 			String test=index.next();
 			isApproved=(entity.getTesto().indexOf(test)==-1);
 			if(!isApproved)	{	
 				messageToMediationService.setParseApproved(isApproved);
 				addCommentToMediationService(messageToMediationService);
+				long after = cal.getTimeInMillis();
+				logger.info("Time parsing = "+(after-before)+" millisec");
 				return isApproved;		
 			}
 		}
@@ -93,10 +102,12 @@ public class MediationParserImpl {
 		
 	}
 
+	// restituisce la lista delle parole da filtrare
 	private Collection<String> getNotApprovedWordDictionary() {
 		Collection<String> stringColl=new ArrayList<String>();
 		
-		stringColl.add("casa");
+		TextReader readerBW = new TextReader();
+		stringColl = readerBW.getListFromFiles();
 		
 		return stringColl;
 	}
