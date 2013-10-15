@@ -100,6 +100,7 @@ public class MessageToMediationService implements Serializable {
 			messageToMediationService.setMediationApproved(o.getBoolean("mediationApproved"));
 			messageToMediationService.setParseApproved(o.getBoolean("parseApproved"));
 			messageToMediationService.setTimestamp(o.getLong("timestamp"));
+			if(o.has("note"))
 			messageToMediationService.setNote(o.getString("note"));
 			
 		
