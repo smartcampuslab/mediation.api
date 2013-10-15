@@ -21,7 +21,7 @@ public class MediationParserImpl {
 	private DataSource dataSource;
 	private String urlServermediation;
 	private String webappname;
-	private String client_token="blabla";
+	private String client_token="bearer blabla";
 	
 	private static final Logger logger = Logger
 			.getLogger(MediationParserImpl.class);
@@ -35,12 +35,12 @@ public class MediationParserImpl {
 	}
 	
 	
-	public boolean[] validateComments(List<CommentBaseEntity> entities){
+	public boolean[] validateComments(List<CommentBaseEntity> entities, String token){
 		boolean[] returnApprovedState=new boolean[entities.size()];
 		
 		int i=0;
 		for(CommentBaseEntity index : entities){
-			returnApprovedState[i]=validateComment(index);
+			returnApprovedState[i]=validateComment(index,token);
 			i++;
 		}
 		
@@ -49,7 +49,7 @@ public class MediationParserImpl {
 		
 	}
 	
-	public boolean validateComment(CommentBaseEntity entity){
+	public boolean validateComment(CommentBaseEntity entity, String token){
 		
 		MessageToMediationService messageToMediationService=new MessageToMediationService(webappname,entity.getId(),entity.getTesto());
 		Collection<String> x=getNotApprovedWordDictionary();
@@ -69,7 +69,7 @@ public class MediationParserImpl {
 			if(!isApproved)	{	
 				messageToMediationService.setParseApproved(isApproved);
 				messageToMediationService.setNote("["+test+"]");
-				addCommentToMediationService(messageToMediationService);
+				addCommentToMediationService(messageToMediationService,token);
 				after = System.currentTimeMillis();
 				diff = after-before;
 				logger.info("Time parsing = "+diff+" millisec");
@@ -81,7 +81,7 @@ public class MediationParserImpl {
 		diff = after-before;
 		logger.info("Time parsing = "+diff+" millisec");
 		messageToMediationService.setParseApproved(isApproved);		
-		addCommentToMediationService(messageToMediationService);
+		addCommentToMediationService(messageToMediationService,token);
 		
 		
 		return isApproved;
@@ -93,11 +93,11 @@ public class MediationParserImpl {
 	
 	
 	private void addCommentToMediationService(
-			MessageToMediationService messageToMediationService)  {
+			MessageToMediationService messageToMediationService, String token)  {
 		
 		
 		try {
-			RemoteConnector.postJSON(urlServermediation, MediationConstant.ADD_COMMENT, messageToMediationService.ToJson(), client_token);
+			RemoteConnector.postJSON(urlServermediation, MediationConstant.ADD_COMMENT, messageToMediationService.ToJson(), token);
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
