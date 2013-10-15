@@ -57,22 +57,29 @@ public class MediationParserImpl {
 		
 		boolean isApproved=true;
 		
+		long after = 0;
+		long before = 0;
+		long diff = 0;
+		
 		while(index.hasNext() && isApproved){	
-			Calendar cal = Calendar.getInstance();
-			long before = cal.getTimeInMillis();
+			
+			before = System.currentTimeMillis();
 			String test=index.next();
 			isApproved=(entity.getTesto().indexOf(test)==-1);
 			if(!isApproved)	{	
 				messageToMediationService.setParseApproved(isApproved);
+				messageToMediationService.setNote("["+test+"]");
 				addCommentToMediationService(messageToMediationService);
-				long after = cal.getTimeInMillis();
-				logger.info("Time parsing = "+(after-before)+" millisec");
+				after = System.currentTimeMillis();
+				diff = after-before;
+				logger.info("Time parsing = "+diff+" millisec");
 				return isApproved;		
 			}
 		}
-				
-		
-		
+			
+		after = System.currentTimeMillis();
+		diff = after-before;
+		logger.info("Time parsing = "+diff+" millisec");
 		messageToMediationService.setParseApproved(isApproved);		
 		addCommentToMediationService(messageToMediationService);
 		
