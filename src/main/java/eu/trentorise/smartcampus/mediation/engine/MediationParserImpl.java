@@ -35,23 +35,23 @@ public class MediationParserImpl {
 	}
 	
 	
-	public boolean[] validateComments(List<CommentBaseEntity> entities, String token){
-		boolean[] returnApprovedState=new boolean[entities.size()];
-		
-		int i=0;
-		for(CommentBaseEntity index : entities){
-			returnApprovedState[i]=validateComment(index,token);
-			i++;
-		}
-		
-		return returnApprovedState;
-		
-		
-	}
+//	public boolean[] validateComments(List<CommentBaseEntity> entities, String token){
+//		boolean[] returnApprovedState=new boolean[entities.size()];
+//		
+//		int i=0;
+//		for(CommentBaseEntity index : entities){
+//			returnApprovedState[i]=validateComment(index,token);
+//			i++;
+//		}
+//		
+//		return returnApprovedState;
+//		
+//		
+//	}
 	
-	public boolean validateComment(CommentBaseEntity entity, String token){
+	public boolean validateComment(String testoentity,int identity, String token){
 		
-		MessageToMediationService messageToMediationService=new MessageToMediationService(webappname,entity.getId(),entity.getTesto());
+		MessageToMediationService messageToMediationService=new MessageToMediationService(webappname,identity,testoentity);
 		Collection<String> x=getNotApprovedWordDictionary();
 		Iterator<String> index=x.iterator();
 		
@@ -65,7 +65,7 @@ public class MediationParserImpl {
 			
 			before = System.currentTimeMillis();
 			String test=index.next();
-			isApproved=(entity.getTesto().indexOf(test)==-1);
+			isApproved=(testoentity.indexOf(test)==-1);
 			if(!isApproved)	{	
 				messageToMediationService.setParseApproved(isApproved);
 				messageToMediationService.setNote("["+test+"]");
