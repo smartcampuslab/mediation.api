@@ -49,9 +49,9 @@ public class MediationParserImpl {
 //		
 //	}
 	
-	public boolean validateComment(String testoentity,int identity, String token){
+	public boolean validateComment(String testoentity,int identity,Long userid, String token){
 		
-		MessageToMediationService messageToMediationService=new MessageToMediationService(webappname,identity,testoentity);
+		MessageToMediationService messageToMediationService=new MessageToMediationService(webappname,identity,testoentity,String.valueOf(userid));
 		Collection<String> x=getNotApprovedWordDictionary();
 		Iterator<String> index=x.iterator();
 		
@@ -68,7 +68,7 @@ public class MediationParserImpl {
 			isApproved=(testoentity.indexOf(test)==-1);
 			if(!isApproved)	{	
 				messageToMediationService.setParseApproved(isApproved);
-				messageToMediationService.setNote("["+test+"]");
+				messageToMediationService.setNote("[Blocked by = "+test+"]");
 				addCommentToMediationService(messageToMediationService,token);
 				after = System.currentTimeMillis();
 				diff = after-before;

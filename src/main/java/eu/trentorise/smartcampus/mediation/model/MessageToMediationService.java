@@ -16,6 +16,7 @@ public class MessageToMediationService implements Serializable {
 	private int entityId;
 	private String entityTesto;
 	private String note;
+	private String userid;
 
 	/**
 	 * 
@@ -24,13 +25,14 @@ public class MessageToMediationService implements Serializable {
 	
 	
 
-	public MessageToMediationService(String webappname,int entityId,String entityTesto) {
+	public MessageToMediationService(String webappname,int entityId,String entityTesto,String userid) {
 		this.setWebappname(webappname);
 		this.timestamp = System.currentTimeMillis();
 		this.mediationApproved = true;
 		this.parseApproved = true;
 		this.setEntityId(entityId);
 		this.setEntityTesto(entityTesto);
+		this.setUserid(userid);
 	}
 
 	public boolean isParseApproved() {
@@ -83,7 +85,7 @@ public class MessageToMediationService implements Serializable {
 
 	public String ToJson() {
 		String object=new String();
-		object="{\"parseApproved\":"+parseApproved+",\"mediationApproved\":"+mediationApproved+",\"timestamp\":"+timestamp+",\"webappname\":\""+webappname+"\",\"entityId\":"+entityId+",\"entityTesto\":\""+entityTesto+"\",\"note\":\""+note+"\"}";
+		object="{\"parseApproved\":"+parseApproved+",\"mediationApproved\":"+mediationApproved+",\"timestamp\":"+timestamp+",\"webappname\":\""+webappname+"\",\"entityId\":"+entityId+",\"entityTesto\":\""+entityTesto+"\",\"note\":\""+note+"\",\"userid\":\""+userid+"\"}";
 		
 		return object;
 	}
@@ -94,9 +96,10 @@ public class MessageToMediationService implements Serializable {
 			JSONObject o = new JSONObject(json);
 			String webapp =o.getString("webappname");
 			String entityTesto =o.getString("entityTesto");
+			String userid =o.getString("userid");
 			int entityId =o.getInt("entityId");
 			
-			MessageToMediationService messageToMediationService = new MessageToMediationService(webapp,entityId,entityTesto);
+			MessageToMediationService messageToMediationService = new MessageToMediationService(webapp,entityId,entityTesto,userid);
 			messageToMediationService.setMediationApproved(o.getBoolean("mediationApproved"));
 			messageToMediationService.setParseApproved(o.getBoolean("parseApproved"));
 			messageToMediationService.setTimestamp(o.getLong("timestamp"));
@@ -116,5 +119,13 @@ public class MessageToMediationService implements Serializable {
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setUserid(String userid) {
+		this.userid = userid;
 	}
 }
