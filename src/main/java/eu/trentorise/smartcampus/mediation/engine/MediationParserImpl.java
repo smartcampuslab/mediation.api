@@ -97,6 +97,7 @@ public class MediationParserImpl {
 		
 		
 		try {
+			logger.debug(urlServermediation+MediationConstant.ADD_COMMENT);
 			RemoteConnector.postJSON(urlServermediation, MediationConstant.ADD_COMMENT, messageToMediationService.ToJson(), token);
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
