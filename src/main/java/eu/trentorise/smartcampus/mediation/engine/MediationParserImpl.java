@@ -103,7 +103,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	}
 
-	private List<KeyWordPersistent> updateKeyWord(String token, long data) {
+	private boolean updateKeyWord(String token, long data) {
 
 		try {
 			logger.debug(urlServermediation + MediationConstant.ADD_COMMENT);
@@ -112,7 +112,10 @@ public class MediationParserImpl extends JdbcTemplate {
 			
 			List<KeyWordPersistent> keyWordPersistentList=KeyWordPersistent.valueOfList(response);
 			
-			return keyWordPersistentList;
+			
+			
+			
+			return true;
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -120,8 +123,8 @@ public class MediationParserImpl extends JdbcTemplate {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
-
+		return false;
+		
 	}
 
 	private void addCommentToMediationService(
@@ -142,15 +145,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	}
 
-	// restituisce la lista delle parole da filtrare
-	private Collection<String> getNotApprovedWordDictionary() {
-		Collection<String> stringColl = new ArrayList<String>();
-
-		TextReader readerBW = new TextReader();
-		stringColl = readerBW.getListFromFiles();
-
-		return stringColl;
-	}
+	
 
 	public List<KeyWordPersistent> loadAppDictionary() {
 		
