@@ -11,8 +11,8 @@ import org.json.JSONObject;
 public class KeyWordPersistent {
 
 	private String id;
-	private String key;
-	private long timestamp;
+	private String keyword;
+	private long timeupdate;
 
 	public KeyWordPersistent() {
 
@@ -20,8 +20,8 @@ public class KeyWordPersistent {
 
 	public KeyWordPersistent(String id, String key, long timestamp) {
 		this.id=id;
-		this.key=key;
-		this.timestamp=timestamp;
+		this.setKeyword(key);
+		this.setTimeupdate(timestamp);
 	}
 
 	public String getId() {
@@ -32,28 +32,12 @@ public class KeyWordPersistent {
 		this.id = id;
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public long getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
-	}
-
 	public static KeyWordPersistent valueOf(String json) {
 		try {
 			JSONObject o = new JSONObject(json);
 			String id =o.getString("id");
-			String key =o.getString("key");
-			Long timestamp =o.getLong("timestamp");
+			String key =o.getString("keyword");
+			Long timestamp =o.getLong("timeupdate");
 			KeyWordPersistent keyWordPersistent=new KeyWordPersistent(id,key,timestamp);
 			
 		
@@ -72,8 +56,8 @@ public class KeyWordPersistent {
 			for(int i=0 ;i<array.length();i++){
 				JSONObject o = array.getJSONObject(i);
 				String id =o.getString("id");
-				String key =o.getString("key");
-				Long timestamp =o.getLong("timestamp");
+				String key =o.getString("keyword");
+				Long timestamp =o.getLong("timeupdate");
 				KeyWordPersistent keyWordPersistent=new KeyWordPersistent(id,key,timestamp);
 				returnList.add(keyWordPersistent);
 				
@@ -91,9 +75,25 @@ public class KeyWordPersistent {
 	
 	public String ToJson() {
 		String object=new String();
-		object="{\"id\":"+id+",\"key\":"+key+",\"timestamp\":"+timestamp+"\"}";
+		object="{\"id\":"+id+",\"keyword\":"+getKeyword()+",\"timeupdate\":"+getTimeupdate()+"\"}";
 		
 		return object;
+	}
+
+	public String getKeyword() {
+		return keyword;
+	}
+
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
+	}
+
+	public long getTimeupdate() {
+		return timeupdate;
+	}
+
+	public void setTimeupdate(long timeupdate) {
+		this.timeupdate = timeupdate;
 	}
 
 	

@@ -1,5 +1,6 @@
 package eu.trentorise.smartcampus.mediation.engine;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import eu.trentorise.smartcampus.mediation.model.KeyWordPersistent;
@@ -17,10 +19,10 @@ import eu.trentorise.smartcampus.network.RemoteException;
 
 public class MediationParserImpl extends JdbcTemplate {
 
-	private static final String CREATE_TABLE_KEYWORDPERSISTENT = "CREATE TABLE `keywordpersistent` ( `id`  varchar(450) NOT NULL,`key` varchar(45) DEFAULT NULL,`timestamp` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
+	private static final String CREATE_TABLE_KEYWORDPERSISTENT = "CREATE TABLE IF NOT EXISTS `keywordpersistent` ( `id`  varchar(450) NOT NULL,`keyword` varchar(45) DEFAULT NULL,`timeupdate` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
 	private static final String DELETE_FROM_KEYWORDPERSISTENT = "delete from keywordpersistent";
-	private static final String DEFAULT_KEY_SELECT_STATEMENT = "select * from keywordpersistent ";
-	private static final String DEFAULT_KEY_TIME_STATEMENT = "SELECT timestamp FROM keywordpersistent ORDER BY timestamp DESC limit 1 ";
+	private static final String DEFAULT_KEY_SELECT_STATEMENT = "select id,keyword,timeupdate from keywordpersistent ";
+	private static final String DEFAULT_KEY_TIME_STATEMENT = "SELECT timeupdate FROM keywordpersistent ORDER BY timeupdate DESC limit 1 ";
 
 	private String selectKeySql = DEFAULT_KEY_SELECT_STATEMENT;
 	private String sqlLongKeyTime = DEFAULT_KEY_TIME_STATEMENT;
@@ -43,15 +45,14 @@ public class MediationParserImpl extends JdbcTemplate {
 		this.setUrlServermediation(urlServermediation);
 		this.webappname = webappname;
 
-		execute(CREATE_TABLE_KEYWORDPERSISTENT);
 	}
 
-	public boolean fastValidateComment(String testoentity, int identity,
+	public boolean localValidationComment(String testoentity, int identity,
 			Long userid, String token) {
 
 		MessageToMediationService messageToMediationService = new MessageToMediationService(
 				webappname, identity, testoentity, String.valueOf(userid));
-		Collection<KeyWordPersistent> x = loadAppDictionary(); // getNotApprovedWordDictionary();
+		Collection<KeyWordPersistent> x = loadAppDictionary();
 		Iterator<KeyWordPersistent> index = x.iterator();
 
 		boolean isApproved = true;
@@ -64,7 +65,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 			before = System.currentTimeMillis();
 			KeyWordPersistent test = index.next();
-			isApproved = (testoentity.indexOf(test.getKey()) == -1);
+			isApproved = (testoentity.indexOf(test.getKeyword()) == -1);
 			if (!isApproved) {
 				messageToMediationService.setParseApproved(isApproved);
 				messageToMediationService
@@ -87,7 +88,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	}
 
-	public boolean remoteValidateComment(String testoentity, int identity,
+	public boolean remoteValidationComment(String testoentity, int identity,
 			Long userid, String token) {
 
 		MessageToMediationService messageToMediationService = new MessageToMediationService(
@@ -105,24 +106,26 @@ public class MediationParserImpl extends JdbcTemplate {
 	public boolean updateKeyWord(String token) {
 
 		try {
+			long lastTime = getLastKeyWordTime();
+
 			logger.debug(urlServermediation + MediationConstant.ADD_COMMENT);
-			String response = RemoteConnector
-					.getJSON(urlServermediation, MediationConstant.GET_KEYWORD +webappname, token);
+			String response = RemoteConnector.getJSON(urlServermediation,
+					MediationConstant.GET_KEYWORD + webappname, token);
 
 			Collection<KeyWordPersistent> keyWordPersistentList = KeyWordPersistent
 					.valueOfList(response);
 			Iterator<KeyWordPersistent> index = keyWordPersistentList
 					.iterator();
-			
-			logger.info("key list size "+keyWordPersistentList.size());
-			
+
+			logger.info("key list size " + keyWordPersistentList.size());
+
 			execute(DELETE_FROM_KEYWORDPERSISTENT);
 
 			while (index.hasNext()) {
 				KeyWordPersistent key = index.next();
 				execute("INSERT INTO keywordpersistent VALUES (\""
-						+ key.getId() + "\",\"" + key.getKey() + "\","
-						+ key.getTimestamp() + ")");
+						+ key.getId() + "\",\"" + key.getKeyword() + "\","
+						+ key.getTimeupdate() + ")");
 			}
 
 			return true;
@@ -141,7 +144,9 @@ public class MediationParserImpl extends JdbcTemplate {
 		try {
 			return queryForLong(sqlLongKeyTime);
 		} catch (Exception x) {
+
 			logger.warn("Empty key table,reload all");
+			execute(CREATE_TABLE_KEYWORDPERSISTENT);
 			return 0;
 		}
 	}
@@ -165,8 +170,14 @@ public class MediationParserImpl extends JdbcTemplate {
 	}
 
 	public List<KeyWordPersistent> loadAppDictionary() {
+		try {
 
-		return queryForList(selectKeySql, null, null, KeyWordPersistent.class);
+			return query( selectKeySql, new BeanPropertyRowMapper<KeyWordPersistent>( KeyWordPersistent.class)); 
+			
+		} catch (Exception x) {
+			x.printStackTrace();
+			return new ArrayList<KeyWordPersistent>();
+		}
 	}
 
 	public DataSource getDataSource() {
