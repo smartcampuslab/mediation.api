@@ -5,8 +5,6 @@ import java.io.Serializable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import eu.trentorise.smartcampus.network.JsonUtils;
-
 public class MessageToMediationService implements Serializable {
 
 	private boolean parseApproved;
@@ -22,10 +20,9 @@ public class MessageToMediationService implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	
 
-	public MessageToMediationService(String webappname,int entityId,String entityTesto,String userid) {
+	public MessageToMediationService(String webappname, int entityId,
+			String entityTesto, String userid) {
 		this.setWebappname(webappname);
 		this.timestamp = System.currentTimeMillis();
 		this.mediationApproved = true;
@@ -84,29 +81,35 @@ public class MessageToMediationService implements Serializable {
 	}
 
 	public String ToJson() {
-		String object=new String();
-		object="{\"parseApproved\":"+parseApproved+",\"mediationApproved\":"+mediationApproved+",\"timestamp\":"+timestamp+",\"webappname\":\""+webappname+"\",\"entityId\":"+entityId+",\"entityTesto\":\""+entityTesto+"\",\"note\":\""+note+"\",\"userid\":\""+userid+"\"}";
-		
+		String object = new String();
+		object = "{\"parseApproved\":" + parseApproved
+				+ ",\"mediationApproved\":" + mediationApproved
+				+ ",\"timestamp\":" + timestamp + ",\"webappname\":\""
+				+ webappname + "\",\"entityId\":" + entityId
+				+ ",\"entityTesto\":\"" + entityTesto + "\",\"note\":\"" + note
+				+ "\",\"userid\":\"" + userid + "\"}";
+
 		return object;
 	}
 
-	
 	public static MessageToMediationService valueOf(String json) {
 		try {
 			JSONObject o = new JSONObject(json);
-			String webapp =o.getString("webappname");
-			String entityTesto =o.getString("entityTesto");
-			String userid =o.getString("userid");
-			int entityId =o.getInt("entityId");
-			
-			MessageToMediationService messageToMediationService = new MessageToMediationService(webapp,entityId,entityTesto,userid);
-			messageToMediationService.setMediationApproved(o.getBoolean("mediationApproved"));
-			messageToMediationService.setParseApproved(o.getBoolean("parseApproved"));
+			String webapp = o.getString("webappname");
+			String entityTesto = o.getString("entityTesto");
+			String userid = o.getString("userid");
+			int entityId = o.getInt("entityId");
+
+			MessageToMediationService messageToMediationService = new MessageToMediationService(
+					webapp, entityId, entityTesto, userid);
+			messageToMediationService.setMediationApproved(o
+					.getBoolean("mediationApproved"));
+			messageToMediationService.setParseApproved(o
+					.getBoolean("parseApproved"));
 			messageToMediationService.setTimestamp(o.getLong("timestamp"));
-			if(o.has("note"))
-			messageToMediationService.setNote(o.getString("note"));
-			
-		
+			if (o.has("note"))
+				messageToMediationService.setNote(o.getString("note"));
+
 			return messageToMediationService;
 		} catch (JSONException e) {
 			return null;
