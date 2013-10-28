@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import eu.trentorise.smartcampus.mediation.model.KeyWordPersistent;
 import eu.trentorise.smartcampus.mediation.model.MessageToMediationService;
+import eu.trentorise.smartcampus.mediation.model.Stato;
 import eu.trentorise.smartcampus.mediation.util.MediationConstant;
 import eu.trentorise.smartcampus.network.RemoteConnector;
 import eu.trentorise.smartcampus.network.RemoteException;
@@ -69,7 +70,8 @@ public class MediationParserImpl extends JdbcTemplate {
 			if (!isApproved) {
 				messageToMediationService.setParseApproved(isApproved);
 				messageToMediationService
-						.setNote("[Blocked by = " + test + "]");
+						.setNote("[Blocked by = " + test.getKeyword() + "]");
+				messageToMediationService.setMediationApproved(Stato.NOT_REQUEST);
 				addCommentToMediationService(messageToMediationService, token);
 				after = System.currentTimeMillis();
 				diff = after - before;
@@ -82,6 +84,7 @@ public class MediationParserImpl extends JdbcTemplate {
 		diff = after - before;
 		logger.info("Time parsing = " + diff + " millisec");
 		messageToMediationService.setParseApproved(isApproved);
+		messageToMediationService.setMediationApproved(Stato.NOT_REQUEST);
 		addCommentToMediationService(messageToMediationService, token);
 
 		return isApproved;

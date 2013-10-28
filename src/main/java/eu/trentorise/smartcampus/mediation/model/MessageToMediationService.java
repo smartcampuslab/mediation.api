@@ -6,9 +6,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MessageToMediationService implements Serializable {
+	
+	
 
 	private boolean parseApproved;
-	private boolean mediationApproved;
+	private Stato mediationApproved;
+	public Stato getMediationApproved() {
+		return mediationApproved;
+	}
+
+	public void setMediationApproved(Stato mediationApproved) {
+		this.mediationApproved = mediationApproved;
+	}
+
 	private long timestamp;
 	private String webappname;
 	private int entityId;
@@ -25,7 +35,7 @@ public class MessageToMediationService implements Serializable {
 			String entityTesto, String userid) {
 		this.setWebappname(webappname);
 		this.timestamp = System.currentTimeMillis();
-		this.mediationApproved = true;
+		this.mediationApproved = Stato.WAITING;
 		this.parseApproved = true;
 		this.setEntityId(entityId);
 		this.setEntityTesto(entityTesto);
@@ -48,13 +58,7 @@ public class MessageToMediationService implements Serializable {
 		this.webappname = webappname;
 	}
 
-	public boolean isMediationApproved() {
-		return mediationApproved;
-	}
-
-	public void setMediationApproved(boolean mediationApproved) {
-		this.mediationApproved = mediationApproved;
-	}
+	
 
 	public long getTimestamp() {
 		return timestamp;
@@ -102,8 +106,8 @@ public class MessageToMediationService implements Serializable {
 
 			MessageToMediationService messageToMediationService = new MessageToMediationService(
 					webapp, entityId, entityTesto, userid);
-			messageToMediationService.setMediationApproved(o
-					.getBoolean("mediationApproved"));
+			messageToMediationService.setMediationApproved(Stato.valueOf(o
+					.getString("mediationApproved")));
 			messageToMediationService.setParseApproved(o
 					.getBoolean("parseApproved"));
 			messageToMediationService.setTimestamp(o.getLong("timestamp"));
