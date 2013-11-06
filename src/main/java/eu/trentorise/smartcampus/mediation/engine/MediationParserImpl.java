@@ -111,7 +111,7 @@ public class MediationParserImpl extends JdbcTemplate {
 		try {
 			long lastTime = getLastKeyWordTime();
 
-			logger.debug(urlServermediation + MediationConstant.ADD_COMMENT);
+			logger.debug(urlServermediation + MediationConstant.GET_KEYWORD(webappname));
 			String response = RemoteConnector.getJSON(urlServermediation,
 					MediationConstant.GET_KEYWORD(webappname), token);
 
