@@ -35,9 +35,9 @@ public class KeyWordPersistent {
 	public static KeyWordPersistent valueOf(String json) {
 		try {
 			JSONObject o = new JSONObject(json);
-			String id =o.getString("id");
-			String key =o.getString("keyword");
-			Long timestamp =o.getLong("timeupdate");
+			String id = o.getString("id");
+			String key = o.getString("key");
+			Long timestamp = o.getLong("timeupdate");
 			KeyWordPersistent keyWordPersistent=new KeyWordPersistent(id,key,timestamp);
 			
 		

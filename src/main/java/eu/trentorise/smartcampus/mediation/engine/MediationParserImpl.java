@@ -20,7 +20,7 @@ import eu.trentorise.smartcampus.network.RemoteException;
 
 public class MediationParserImpl extends JdbcTemplate {
 
-	private static final String CREATE_TABLE_KEYWORDPERSISTENT = "CREATE TABLE IF NOT EXISTS `keywordpersistent` ( `id`  varchar(450) NOT NULL,`keyword` varchar(45) DEFAULT NULL,`timeupdate` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
+	private static final String CREATE_TABLE_KEYWORDPERSISTENT = "CREATE TABLE IF NOT EXISTS `keywordpersistent` ( `id`  varchar(250) NOT NULL,`keyword` varchar(45) DEFAULT NULL,`timeupdate` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
 	private static final String DELETE_FROM_KEYWORDPERSISTENT = "delete from keywordpersistent";
 	private static final String DEFAULT_KEY_SELECT_STATEMENT = "select id,keyword,timeupdate from keywordpersistent ";
 	private static final String DEFAULT_KEY_TIME_STATEMENT = "SELECT timeupdate FROM keywordpersistent ORDER BY timeupdate DESC limit 1 ";
@@ -113,7 +113,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 			logger.debug(urlServermediation + MediationConstant.ADD_COMMENT);
 			String response = RemoteConnector.getJSON(urlServermediation,
-					MediationConstant.GET_KEYWORD + webappname, token);
+					MediationConstant.GET_KEYWORD(webappname), token);
 
 			Collection<KeyWordPersistent> keyWordPersistentList = KeyWordPersistent
 					.valueOfList(response);
@@ -174,8 +174,8 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	public List<KeyWordPersistent> loadAppDictionary() {
 		try {
-
-			return query( selectKeySql, new BeanPropertyRowMapper<KeyWordPersistent>( KeyWordPersistent.class)); 
+			List<KeyWordPersistent> listKeys = query( selectKeySql, new BeanPropertyRowMapper<KeyWordPersistent>( KeyWordPersistent.class)); 
+			return listKeys;
 			
 		} catch (Exception x) {
 			x.printStackTrace();
