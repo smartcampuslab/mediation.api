@@ -2,12 +2,17 @@ package eu.trentorise.smartcampus.mediation.engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -69,9 +74,10 @@ public class MediationParserImpl extends JdbcTemplate {
 			isApproved = (testoentity.indexOf(test.getKeyword()) == -1);
 			if (!isApproved) {
 				messageToMediationService.setParseApproved(isApproved);
+				messageToMediationService.setNote("[Blocked by = "
+						+ test.getKeyword() + "]");
 				messageToMediationService
-						.setNote("[Blocked by = " + test.getKeyword() + "]");
-				messageToMediationService.setMediationApproved(Stato.NOT_REQUEST);
+						.setMediationApproved(Stato.NOT_REQUEST);
 				addCommentToMediationService(messageToMediationService, token);
 				after = System.currentTimeMillis();
 				diff = after - before;
@@ -111,7 +117,8 @@ public class MediationParserImpl extends JdbcTemplate {
 		try {
 			long lastTime = getLastKeyWordTime();
 
-			logger.debug(urlServermediation + MediationConstant.GET_KEYWORD(webappname));
+			logger.debug(urlServermediation
+					+ MediationConstant.GET_KEYWORD(webappname));
 			String response = RemoteConnector.getJSON(urlServermediation,
 					MediationConstant.GET_KEYWORD(webappname), token);
 
@@ -172,11 +179,44 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	}
 
+	public Map<String, Boolean> updateCommentToMediationService(
+			MessageToMediationService messageToMediationService, String token) {
+
+		try {
+			logger.debug(urlServermediation + MediationConstant.GET_COMMENT);
+			String response = RemoteConnector.getJSON(urlServermediation,
+					MediationConstant.GET_COMMENT + System.currentTimeMillis()
+							+ "/" + webappname, token);
+			Map<String, Boolean> returnMap = new HashMap<String, Boolean>();
+
+			JSONArray array = new JSONArray(response);
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject object = array.getJSONObject(i);
+
+				// if both of filters are true message moderation was positive
+				Boolean resultApprove = object.getBoolean("parseApproved")
+						&& (object.getString("mediatioApproved").compareTo(
+								Stato.APPROVED.toString()) == 0);
+
+				returnMap.put(object.getString("entityId"), resultApprove);
+			}
+
+			return returnMap;
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public List<KeyWordPersistent> loadAppDictionary() {
 		try {
-			List<KeyWordPersistent> listKeys = query( selectKeySql, new BeanPropertyRowMapper<KeyWordPersistent>( KeyWordPersistent.class)); 
+			List<KeyWordPersistent> listKeys = query(selectKeySql,
+					new BeanPropertyRowMapper<KeyWordPersistent>(
+							KeyWordPersistent.class));
 			return listKeys;
-			
+
 		} catch (Exception x) {
 			x.printStackTrace();
 			return new ArrayList<KeyWordPersistent>();
