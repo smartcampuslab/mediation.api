@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import eu.trentorise.smartcampus.mediation.model.CommentBaseEntity;
 import eu.trentorise.smartcampus.mediation.model.KeyWordPersistent;
 import eu.trentorise.smartcampus.mediation.model.MessageToMediationService;
 import eu.trentorise.smartcampus.mediation.model.Stato;
@@ -179,8 +180,7 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	}
 
-	public Map<String, Boolean> updateCommentToMediationService(
-			MessageToMediationService messageToMediationService, String token) {
+	public Collection<CommentBaseEntity> updateCommentToMediationService(Collection<CommentBaseEntity> list,String token) {
 
 		try {
 			logger.debug(urlServermediation + MediationConstant.GET_COMMENT);
@@ -200,8 +200,17 @@ public class MediationParserImpl extends JdbcTemplate {
 
 				returnMap.put(object.getString("entityId"), resultApprove);
 			}
+			
+			
+			for(CommentBaseEntity commentBaseEntity : list){
+				if(returnMap.containsKey(commentBaseEntity.getId())){
+					commentBaseEntity.setApproved(returnMap.get(commentBaseEntity.getId()));
+				}
+				
+			}
+			
 
-			return returnMap;
+			return list;
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
