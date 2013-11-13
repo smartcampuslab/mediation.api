@@ -189,15 +189,17 @@ public class MediationParserImpl extends JdbcTemplate {
 							+ "/" + webappname, token);
 			Map<String, Boolean> returnMap = new HashMap<String, Boolean>();
 
+			Boolean resultApprove=false;
 			JSONArray array = new JSONArray(response);
 			for (int i = 0; i < array.length(); i++) {
 				JSONObject object = array.getJSONObject(i);
 
 				// if both of filters are true message moderation was positive
-				Boolean resultApprove = object.getBoolean("parseApproved")
-						&& (object.getString("mediatioApproved").compareTo(
-								Stato.APPROVED.toString()) == 0);
-
+				resultApprove =  (object.getString("mediatioApproved").compareTo(
+								Stato.APPROVED.toString()) == 0 || object.getString("mediatioApproved").compareTo(
+										Stato.WAITING.toString()) == 0 || object.getString("mediatioApproved").compareTo(
+												Stato.NOT_REQUEST.toString()) == 0 ); //object.getBoolean("parseApproved")&&
+				logger.debug(object.getString("entityId") +"-->" +resultApprove);
 				returnMap.put(object.getString("entityId"), resultApprove);
 			}
 			
