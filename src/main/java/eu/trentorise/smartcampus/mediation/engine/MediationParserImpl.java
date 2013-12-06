@@ -223,6 +223,52 @@ public class MediationParserImpl extends JdbcTemplate {
 		}
 		return null;
 	}
+	
+	
+	//new Version con credintial
+	public Collection<CommentBaseEntity> updateCommentToMediationServiceClientCredential(Collection<CommentBaseEntity> list,String token) {
+
+		try {
+			logger.debug(urlServermediation + MediationConstant.GET_COMMENT);
+			String response = RemoteConnector.getJSON(urlServermediation,
+					MediationConstant.GET_COMMENT + System.currentTimeMillis()
+							+ "/" + webappname, token);
+			Map<String, Boolean> returnMap = new HashMap<String, Boolean>();
+
+			Boolean resultApprove=false;
+			JSONArray array = new JSONArray(response);
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject object = array.getJSONObject(i);
+
+				resultApprove=object.getBoolean("parseApproved");
+				String valueBool=object.getString("mediatioApproved");
+				
+				// if both of filters are true message moderation was positive
+				resultApprove = resultApprove &&  (valueBool.compareTo(
+								Stato.APPROVED.toString()) == 0 || valueBool.compareTo(
+										Stato.WAITING.toString()) == 0 || valueBool.compareTo(
+												Stato.NOT_REQUEST.toString()) == 0 ); //object.getBoolean("parseApproved")&&
+	
+				returnMap.put(object.getString("entityId"), resultApprove);
+			}
+			
+			
+			for(CommentBaseEntity commentBaseEntity : list){
+				if(returnMap.containsKey(commentBaseEntity.getId())){
+					commentBaseEntity.setApproved(returnMap.get(commentBaseEntity.getId()));
+				}
+				
+			}
+			
+
+			return list;
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	public List<KeyWordPersistent> loadAppDictionary() {
 		try {
