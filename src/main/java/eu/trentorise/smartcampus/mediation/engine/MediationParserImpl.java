@@ -168,7 +168,7 @@ public class MediationParserImpl extends JdbcTemplate {
 		try {
 			logger.debug(urlServermediation + MediationConstant.ADD_COMMENT);
 			RemoteConnector.postJSON(urlServermediation,
-					MediationConstant.ADD_COMMENT,
+					MediationConstant.ADD_COMMENT+webappname+"/add",
 					messageToMediationService.ToJson(), token);
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
