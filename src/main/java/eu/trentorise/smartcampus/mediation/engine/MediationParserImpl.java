@@ -19,7 +19,7 @@ import eu.trentorise.smartcampus.moderatorservice.model.Stato;
 import eu.trentorise.smartcampus.moderatoservice.ModeratorService;
 import eu.trentorise.smartcampus.moderatoservice.exception.ModeratorServiceException;
 
-public class MediationParserImpl extends JdbcTemplate {
+public class MediationParserImpl {
 
 	private static final String CREATE_TABLE_KeyWord = "CREATE TABLE IF NOT EXISTS `KeyWord` ( `id`  varchar(250) NOT NULL,`keyword` varchar(45) DEFAULT NULL,`timeupdate` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
 	private static final String DELETE_FROM_KeyWord = "delete from KeyWord";
@@ -29,8 +29,10 @@ public class MediationParserImpl extends JdbcTemplate {
 	private String selectKeySql = DEFAULT_KEY_SELECT_STATEMENT;
 	private String sqlLongKeyTime = DEFAULT_KEY_TIME_STATEMENT;
 
-	private EmbeddedDatabase dataSource;
+	private EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder().addScript(
+		"create.sql").build();
 	private String webappname;
+	private String urlServermediation;
 	private ModeratorService serModeratorService;
 
 	private static final Logger logger = Logger
@@ -45,8 +47,8 @@ public class MediationParserImpl extends JdbcTemplate {
 		this.dataSource = new EmbeddedDatabaseBuilder().addScript(
 				CREATE_TABLE_KeyWord).build();
 		this.webappname = webappname;
-		super.setDataSource(dataSource);
-		serModeratorService = new ModeratorService(urlServermediation);
+		this.urlServermediation=urlServermediation;
+	
 
 	}
 
@@ -122,11 +124,13 @@ public class MediationParserImpl extends JdbcTemplate {
 
 			logger.info("key list size " + KeyWordList.size());
 
-			execute(DELETE_FROM_KeyWord);
+			
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+			jdbcTemplate.execute(DELETE_FROM_KeyWord);
 
 			while (index.hasNext()) {
 				KeyWord key = index.next();
-				execute("INSERT INTO KeyWord VALUES (\"" + key.getId()
+				jdbcTemplate.execute("INSERT INTO KeyWord VALUES (\"" + key.getId()
 						+ "\",\"" + key.getKeyword() + "\","
 						+ key.getTimeupdate() + ")");
 			}
@@ -189,8 +193,9 @@ public class MediationParserImpl extends JdbcTemplate {
 	}
 
 	public List<KeyWord> loadAppDictionary() {
-		try {
-			List<KeyWord> listKeys = query(selectKeySql,
+		try {	
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+			List<KeyWord> listKeys = jdbcTemplate.query(selectKeySql,
 					new BeanPropertyRowMapper<KeyWord>(KeyWord.class));
 			return listKeys;
 
@@ -206,6 +211,15 @@ public class MediationParserImpl extends JdbcTemplate {
 
 	public void setWebappname(String webappname) {
 		this.webappname = webappname;
+	}
+
+	public String getUrlServermediation() {
+		return urlServermediation;
+	}
+
+	public void setUrlServermediation(String urlServermediation) {
+		this.urlServermediation = urlServermediation;
+		serModeratorService= new ModeratorService(urlServermediation);
 	}
 
 }

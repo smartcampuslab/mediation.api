@@ -19,7 +19,7 @@ public class CommentBaseEntity {
 	@Column(name = "APPROVED")
 	private boolean approved;
 	
-	@Column(name = "APPROVED")
+	@Column(name = "LASTTIME")
 	private long timestamp;
 	
 	public long getTimestamp() {
