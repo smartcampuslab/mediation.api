@@ -19,6 +19,15 @@ public class CommentBaseEntity {
 	@Column(name = "APPROVED")
 	private boolean approved;
 	
+	@Column(name = "APPROVED")
+	private long timestamp;
+	
+	public long getTimestamp() {
+		return timestamp;
+	}
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
 	public Long getId() {
 		return id;
 	}
