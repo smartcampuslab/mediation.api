@@ -13,9 +13,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 
+import eu.trentorise.smartcampus.moderatorservice.model.ContentToModeratorService;
 import eu.trentorise.smartcampus.moderatorservice.model.KeyWord;
-import eu.trentorise.smartcampus.moderatorservice.model.MessageToMediationService;
-import eu.trentorise.smartcampus.moderatorservice.model.Stato;
+import eu.trentorise.smartcampus.moderatorservice.model.State;
 import eu.trentorise.smartcampus.moderatoservice.ModeratorService;
 import eu.trentorise.smartcampus.moderatoservice.exception.ModeratorServiceException;
 
@@ -29,8 +29,8 @@ public class MediationParserImpl {
 	private String selectKeySql = DEFAULT_KEY_SELECT_STATEMENT;
 	private String sqlLongKeyTime = DEFAULT_KEY_TIME_STATEMENT;
 
-	private EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder().addScript(
-		"create.sql").build();
+	private EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder()
+			.addScript("create.sql").build();
 	private String webappname;
 	private String urlServermediation;
 	private ModeratorService serModeratorService;
@@ -47,16 +47,15 @@ public class MediationParserImpl {
 		this.dataSource = new EmbeddedDatabaseBuilder().addScript(
 				CREATE_TABLE_KeyWord).build();
 		this.webappname = webappname;
-		this.urlServermediation=urlServermediation;
-	
+		this.urlServermediation = urlServermediation;
 
 	}
 
-	public boolean localValidationComment(String testoentity, int identity,
+	public boolean localValidationComment(String testoentity, String identity,
 			Long userid, String token) throws SecurityException,
 			ModeratorServiceException {
 
-		MessageToMediationService messageToMediationService = new MessageToMediationService(
+		ContentToModeratorService messageToMediationService = new ContentToModeratorService(
 				webappname, identity, testoentity, String.valueOf(userid));
 		Collection<KeyWord> x = loadAppDictionary();
 		Iterator<KeyWord> index = x.iterator();
@@ -73,11 +72,10 @@ public class MediationParserImpl {
 			KeyWord test = index.next();
 			isApproved = (testoentity.indexOf(test.getKeyword()) == -1);
 			if (!isApproved) {
-				messageToMediationService.setParseApproved(isApproved);
+				messageToMediationService.setKeywordApproved(isApproved);
 				messageToMediationService.setNote("[Blocked by = "
 						+ test.getKeyword() + "]");
-				messageToMediationService
-						.setMediationApproved(Stato.NOT_REQUEST);
+				messageToMediationService.setManualApproved(State.NOT_REQUEST);
 				addCommentToMediationService(messageToMediationService, token);
 				after = System.currentTimeMillis();
 				diff = after - before;
@@ -89,24 +87,24 @@ public class MediationParserImpl {
 		after = System.currentTimeMillis();
 		diff = after - before;
 		logger.info("Time parsing = " + diff + " millisec");
-		messageToMediationService.setParseApproved(isApproved);
-		messageToMediationService.setMediationApproved(Stato.NOT_REQUEST);
+		messageToMediationService.setKeywordApproved(isApproved);
+		messageToMediationService.setManualApproved(State.NOT_REQUEST);
 		addCommentToMediationService(messageToMediationService, token);
 
 		return isApproved;
 
 	}
 
-	public boolean remoteValidationComment(String testoentity, int identity,
+	public boolean remoteValidationComment(String testoentity, String identity,
 			Long userid, String token) throws SecurityException,
 			ModeratorServiceException {
 
-		MessageToMediationService messageToMediationService = new MessageToMediationService(
+		ContentToModeratorService messageToMediationService = new ContentToModeratorService(
 				webappname, identity, testoentity, String.valueOf(userid));
 
 		boolean isApproved = true;
 
-		messageToMediationService.setParseApproved(isApproved);
+		messageToMediationService.setKeywordApproved(isApproved);
 		addCommentToMediationService(messageToMediationService, token);
 
 		return isApproved;
@@ -124,14 +122,13 @@ public class MediationParserImpl {
 
 			logger.info("key list size " + KeyWordList.size());
 
-			
 			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 			jdbcTemplate.execute(DELETE_FROM_KeyWord);
 
 			while (index.hasNext()) {
 				KeyWord key = index.next();
-				jdbcTemplate.execute("INSERT INTO KeyWord VALUES (\"" + key.getId()
-						+ "\",\"" + key.getKeyword() + "\","
+				jdbcTemplate.execute("INSERT INTO KeyWord VALUES (\""
+						+ key.getId() + "\",\"" + key.getKeyword() + "\","
 						+ key.getTimeupdate() + ")");
 			}
 
@@ -145,7 +142,7 @@ public class MediationParserImpl {
 	}
 
 	private void addCommentToMediationService(
-			MessageToMediationService messageToMediationService, String token)
+			ContentToModeratorService messageToMediationService, String token)
 			throws SecurityException, ModeratorServiceException {
 
 		serModeratorService.addContentToManualFilterByApp(token, webappname,
@@ -159,28 +156,27 @@ public class MediationParserImpl {
 
 		try {
 
-			List<MessageToMediationService> listMessgae = serModeratorService
+			List<ContentToModeratorService> listMessgae = serModeratorService
 					.getContentByDateWindow(token, webappname, fromData, toData);
 
 			Map<String, Boolean> returnMap = new HashMap<String, Boolean>();
 
 			Boolean resultApprove = false;
-			Iterator<MessageToMediationService> index = listMessgae.iterator();
+			Iterator<ContentToModeratorService> index = listMessgae.iterator();
 
 			while (index.hasNext()) {
-				MessageToMediationService object = index.next();
+				ContentToModeratorService object = index.next();
 
-				resultApprove = object.isParseApproved();
-				Stato valueBool = object.getMediationApproved();
+				resultApprove = object.isKeywordApproved();
+				State valueBool = object.getManualApproved();
 
 				// if both of filters are true message moderation was positive
 				resultApprove = resultApprove
-						&& (valueBool.compareTo(Stato.APPROVED) == 0
-								|| valueBool.compareTo(Stato.WAITING) == 0 || valueBool
-								.compareTo(Stato.NOT_REQUEST) == 0); // object.getBoolean("parseApproved")&&
+						&& (valueBool.compareTo(State.APPROVED) == 0
+								|| valueBool.compareTo(State.WAITING) == 0 || valueBool
+								.compareTo(State.NOT_REQUEST) == 0); // object.getBoolean("parseApproved")&&
 
-				returnMap.put(String.valueOf(object.getEntityId()),
-						resultApprove);
+				returnMap.put(object.getObjectId(), resultApprove);
 			}
 
 			return returnMap;
@@ -193,7 +189,7 @@ public class MediationParserImpl {
 	}
 
 	public List<KeyWord> loadAppDictionary() {
-		try {	
+		try {
 			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 			List<KeyWord> listKeys = jdbcTemplate.query(selectKeySql,
 					new BeanPropertyRowMapper<KeyWord>(KeyWord.class));
@@ -219,7 +215,7 @@ public class MediationParserImpl {
 
 	public void setUrlServermediation(String urlServermediation) {
 		this.urlServermediation = urlServermediation;
-		serModeratorService= new ModeratorService(urlServermediation);
+		serModeratorService = new ModeratorService(urlServermediation);
 	}
 
 }
