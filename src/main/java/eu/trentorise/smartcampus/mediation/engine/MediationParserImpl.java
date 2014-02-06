@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 
+import eu.trentorise.smartcampus.mediation.util.KeyWordsFileReader;
 import eu.trentorise.smartcampus.moderatorservice.model.ContentToModeratorService;
 import eu.trentorise.smartcampus.moderatorservice.model.KeyWord;
 import eu.trentorise.smartcampus.moderatorservice.model.State;
@@ -34,6 +35,7 @@ public class MediationParserImpl {
 	private String webappname;
 	private String urlServermediation;
 	private ModeratorService serModeratorService;
+	private KeyWordsFileReader keyWordsReader;
 
 	private static final Logger logger = Logger
 			.getLogger(MediationParserImpl.class);
@@ -127,9 +129,13 @@ public class MediationParserImpl {
 
 			while (index.hasNext()) {
 				KeyWord key = index.next();
-				jdbcTemplate.execute("INSERT INTO KeyWord VALUES (\""
-						+ key.getId() + "\",\"" + key.getKeyword() + "\","
-						+ key.getTimeupdate() + ")");
+				jdbcTemplate
+						.execute("INSERT INTO KeyWord (id, keyword, timeupdate) VALUES ('"
+								+ key.getId().toString()
+								+ "','"
+								+ key.getKeyword()
+								+ "','"
+								+ key.getTimeupdate() + "')");
 			}
 
 			return true;
@@ -156,6 +162,7 @@ public class MediationParserImpl {
 
 		try {
 
+			logger.info("client auth token: " + token);
 			List<ContentToModeratorService> listMessgae = serModeratorService
 					.getContentByDateWindow(token, webappname, fromData, toData);
 
@@ -199,6 +206,35 @@ public class MediationParserImpl {
 			x.printStackTrace();
 			return new ArrayList<KeyWord>();
 		}
+	}
+
+	public boolean resetKeyWords() {
+
+		try {
+
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+			jdbcTemplate.execute(DELETE_FROM_KeyWord);
+
+		} catch (Exception x) {
+			x.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean initKeywords() {
+
+		return true;
+	}
+
+	// restituisce la lista delle parole da filtrare
+	private Collection<String> getNotApprovedWordDictionary() {
+		List<String> keywordsListOnFile = new ArrayList<String>();
+
+		keyWordsReader = new KeyWordsFileReader();
+		keywordsListOnFile = keyWordsReader.getListFromFile();
+
+		return keywordsListOnFile;
 	}
 
 	public String getWebappname() {
