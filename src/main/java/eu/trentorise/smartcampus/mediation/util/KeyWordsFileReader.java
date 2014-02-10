@@ -39,4 +39,11 @@ public final class KeyWordsFileReader {
 	}
 	
 	
+	public boolean setListToFile(List<String> keywords) {
+
+		//////////////////////
+
+		return true;
+	}
+	
 }

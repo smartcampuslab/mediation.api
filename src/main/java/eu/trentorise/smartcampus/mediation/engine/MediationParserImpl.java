@@ -232,6 +232,7 @@ public class MediationParserImpl {
 		List<String> keywordsListOnFile = new ArrayList<String>();
 
 		keyWordsReader = new KeyWordsFileReader();
+		keywordsListOnFile = null;
 		keywordsListOnFile = keyWordsReader.getListFromFile();
 
 		return keywordsListOnFile;
