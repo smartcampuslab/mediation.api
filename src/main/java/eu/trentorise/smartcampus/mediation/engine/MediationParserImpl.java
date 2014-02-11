@@ -1,5 +1,6 @@
 package eu.trentorise.smartcampus.mediation.engine;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,16 +23,6 @@ import eu.trentorise.smartcampus.moderatoservice.exception.ModeratorServiceExcep
 
 public class MediationParserImpl {
 
-	private static final String CREATE_TABLE_KeyWord = "CREATE TABLE IF NOT EXISTS `KeyWord` ( `id`  varchar(250) NOT NULL,`keyword` varchar(45) DEFAULT NULL,`timeupdate` BIGINT DEFAULT 0,  PRIMARY KEY (`id`))";
-	private static final String DELETE_FROM_KeyWord = "delete from KeyWord";
-	private static final String DEFAULT_KEY_SELECT_STATEMENT = "select id,keyword,timeupdate from KeyWord ";
-	private static final String DEFAULT_KEY_TIME_STATEMENT = "SELECT timeupdate FROM KeyWord ORDER BY timeupdate DESC limit 1 ";
-
-	private String selectKeySql = DEFAULT_KEY_SELECT_STATEMENT;
-	private String sqlLongKeyTime = DEFAULT_KEY_TIME_STATEMENT;
-
-	private EmbeddedDatabase dataSource = new EmbeddedDatabaseBuilder()
-			.addScript("create.sql").build();
 	private String webappname;
 	private String urlServermediation;
 	private ModeratorService serModeratorService;
@@ -46,11 +37,10 @@ public class MediationParserImpl {
 
 	public MediationParserImpl(String urlServermediation, String webappname) {
 		super();
-		this.dataSource = new EmbeddedDatabaseBuilder().addScript(
-				CREATE_TABLE_KeyWord).build();
 		this.webappname = webappname;
 		this.urlServermediation = urlServermediation;
 
+		serModeratorService = new ModeratorService(urlServermediation);
 	}
 
 	public boolean localValidationComment(String testoentity, String identity,
@@ -59,24 +49,25 @@ public class MediationParserImpl {
 
 		ContentToModeratorService messageToMediationService = new ContentToModeratorService(
 				webappname, identity, testoentity, String.valueOf(userid));
-		Collection<KeyWord> x = loadAppDictionary();
-		Iterator<KeyWord> index = x.iterator();
+		List<String> x = getNotApprovedWordDictionary();
 
 		boolean isApproved = true;
 
 		long after = 0;
 		long before = 0;
 		long diff = 0;
-
-		while (index.hasNext() && isApproved) {
+		int i = 0;
+		
+		while ((i < x.size()) && isApproved) {
 
 			before = System.currentTimeMillis();
-			KeyWord test = index.next();
-			isApproved = (testoentity.indexOf(test.getKeyword()) == -1);
+			String keyword = x.get(i);
+			isApproved = (testoentity.indexOf(keyword) == -1);
+			i++;
 			if (!isApproved) {
 				messageToMediationService.setKeywordApproved(isApproved);
 				messageToMediationService.setNote("[Blocked by = "
-						+ test.getKeyword() + "]");
+						+ keyword + "]");
 				messageToMediationService.setManualApproved(State.NOT_REQUEST);
 				addCommentToMediationService(messageToMediationService, token);
 				after = System.currentTimeMillis();
@@ -110,40 +101,6 @@ public class MediationParserImpl {
 		addCommentToMediationService(messageToMediationService, token);
 
 		return isApproved;
-
-	}
-
-	public boolean updateKeyWord(String token) throws ModeratorServiceException {
-
-		try {
-
-			Collection<KeyWord> KeyWordList = serModeratorService
-					.getAllKeywordFilterContent(token, webappname);
-
-			Iterator<KeyWord> index = KeyWordList.iterator();
-
-			logger.info("key list size " + KeyWordList.size());
-
-			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-			jdbcTemplate.execute(DELETE_FROM_KeyWord);
-
-			while (index.hasNext()) {
-				KeyWord key = index.next();
-				jdbcTemplate
-						.execute("INSERT INTO KeyWord (id, keyword, timeupdate) VALUES ('"
-								+ key.getId().toString()
-								+ "','"
-								+ key.getKeyword()
-								+ "','"
-								+ key.getTimeupdate() + "')");
-			}
-
-			return true;
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return false;
 
 	}
 
@@ -195,40 +152,52 @@ public class MediationParserImpl {
 		return null;
 	}
 
-	public List<KeyWord> loadAppDictionary() {
-		try {
-			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-			List<KeyWord> listKeys = jdbcTemplate.query(selectKeySql,
-					new BeanPropertyRowMapper<KeyWord>(KeyWord.class));
-			return listKeys;
-
-		} catch (Exception x) {
-			x.printStackTrace();
-			return new ArrayList<KeyWord>();
-		}
-	}
 
 	public boolean resetKeyWords() {
+		
 
-		try {
+		KeyWordsFileReader keyReader = new KeyWordsFileReader();
 
-			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-			jdbcTemplate.execute(DELETE_FROM_KeyWord);
+		boolean operationDelete = keyReader.deleteKeywords();
 
-		} catch (Exception x) {
-			x.printStackTrace();
-			return false;
-		}
-		return true;
+		return operationDelete;
 	}
 
-	public boolean initKeywords() {
+	
+	// inizializzo le keyword caricandole dal db del moderatore in file locale
+	public boolean initKeywords(String token) throws URISyntaxException {
+		
+		try {
+
+			Collection<KeyWord> KeyWordList;
+				KeyWordList = serModeratorService
+						.getAllKeywordFilterContent(token, webappname);
+		
+
+			logger.info("key list size " + KeyWordList.size());
+			
+			KeyWordsFileReader keyReader = new KeyWordsFileReader();
+
+			keyReader.setListToFile(KeyWordList);
+
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} catch (ModeratorServiceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		
+
 
 		return true;
 	}
 
 	// restituisce la lista delle parole da filtrare
-	private Collection<String> getNotApprovedWordDictionary() {
+	public List<String> getNotApprovedWordDictionary() {
 		List<String> keywordsListOnFile = new ArrayList<String>();
 
 		keyWordsReader = new KeyWordsFileReader();
