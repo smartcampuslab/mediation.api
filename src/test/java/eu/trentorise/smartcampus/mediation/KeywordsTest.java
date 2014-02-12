@@ -1,5 +1,7 @@
 package eu.trentorise.smartcampus.mediation;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -17,12 +19,14 @@ public class KeywordsTest {
 	private String token;
 	private MediationParserImpl mediationParser;
 	private KeyWordsFileReader fileReader;
+	private URL url;
 
 	@Before
-	public void init() {
+	public void init() throws MalformedURLException {
 		token = Constants.CLIENT_AUTH_TOKEN;
-		mediationParser = new MediationParserImpl(Constants.URL_MEDIATION_SERVICE, Constants.WEBAPP_NAME);
-		fileReader = new KeyWordsFileReader();
+		url = new URL(Constants.URL_FILE);
+		mediationParser = new MediationParserImpl(Constants.URL_MEDIATION_SERVICE, Constants.WEBAPP_NAME, url);
+		fileReader = new KeyWordsFileReader(url);
 	}
 
 	@Test

@@ -14,10 +14,14 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.apache.cxf.helpers.FileUtils;
 
 import eu.trentorise.smartcampus.moderatorservice.model.KeyWord;
 
@@ -26,9 +30,10 @@ public final class KeyWordsFileReader {
 	public static final String RESOURCE_PATH = "/src/main/resources/bad-words/";
 	public static final String FILE_NAME = "keywords";
 	public static final String ENCODE = "utf-8";
+	public URL url;
 
-	public KeyWordsFileReader() {
-		// TODO Auto-generated constructor stub
+	public KeyWordsFileReader(URL url) {
+		this.url = url;
 	}
 
 	public List<String> getListFromFile() {
@@ -40,9 +45,7 @@ public final class KeyWordsFileReader {
 
 		try {
 
-			String workingDir = System.getProperty("user.dir");
-
-			file = new File(workingDir + RESOURCE_PATH + FILE_NAME);
+			file = new File(url.toURI());
 
 			// if file doesnt exists
 			if (!file.exists()) {
@@ -51,8 +54,7 @@ public final class KeyWordsFileReader {
 
 			fip = new FileInputStream(file);
 
-			reader = new BufferedReader(new InputStreamReader(
-					fip));
+			reader = new BufferedReader(new InputStreamReader(fip));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
 				listFile.add(line);
@@ -81,14 +83,14 @@ public final class KeyWordsFileReader {
 
 			String workingDir = System.getProperty("user.dir");
 
-			file = new File(workingDir + RESOURCE_PATH + FILE_NAME);
-
-			fop = new FileOutputStream(file);
+			file = new File(url.toURI());
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();
 			}
+
+			fop = new FileOutputStream(file);
 
 			// OutputStream input = this.getClass().
 			// getResourceAsStream("/bad-words/"+FILE_NAME);
@@ -108,6 +110,9 @@ public final class KeyWordsFileReader {
 
 		} catch (IOException ex) {
 			return false;
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			try {
 				fop.close();
@@ -126,9 +131,7 @@ public final class KeyWordsFileReader {
 
 		try {
 
-			String workingDir = System.getProperty("user.dir");
-
-			file = new File(workingDir + RESOURCE_PATH + FILE_NAME);
+			file = new File(url.toURI());
 
 			fop = new FileOutputStream(file);
 
@@ -152,6 +155,9 @@ public final class KeyWordsFileReader {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			try {
 				fop.close();

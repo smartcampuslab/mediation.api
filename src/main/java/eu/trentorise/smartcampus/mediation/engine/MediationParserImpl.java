@@ -1,6 +1,7 @@
 package eu.trentorise.smartcampus.mediation.engine;
 
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class MediationParserImpl {
 	private String urlServermediation;
 	private ModeratorService serModeratorService;
 	private KeyWordsFileReader keyWordsReader;
+	private URL url;
 
 	private static final Logger logger = Logger
 			.getLogger(MediationParserImpl.class);
@@ -35,12 +37,12 @@ public class MediationParserImpl {
 
 	}
 
-	public MediationParserImpl(String urlServermediation, String webappname) {
+	public MediationParserImpl(String urlServermediation, String webappname, URL urlResource) {
 		super();
 		this.webappname = webappname;
 		this.urlServermediation = urlServermediation;
-
 		serModeratorService = new ModeratorService(urlServermediation);
+		this.url = urlResource;
 	}
 
 	public boolean localValidationComment(String testoentity, String identity,
@@ -156,7 +158,7 @@ public class MediationParserImpl {
 	public boolean resetKeyWords() {
 		
 
-		KeyWordsFileReader keyReader = new KeyWordsFileReader();
+		KeyWordsFileReader keyReader = new KeyWordsFileReader(url);
 
 		boolean operationDelete = keyReader.deleteKeywords();
 
@@ -176,7 +178,7 @@ public class MediationParserImpl {
 
 			logger.info("key list size " + KeyWordList.size());
 			
-			KeyWordsFileReader keyReader = new KeyWordsFileReader();
+			KeyWordsFileReader keyReader = new KeyWordsFileReader(url);
 
 			keyReader.setListToFile(KeyWordList);
 
@@ -200,7 +202,7 @@ public class MediationParserImpl {
 	public List<String> getNotApprovedWordDictionary() {
 		List<String> keywordsListOnFile = new ArrayList<String>();
 
-		keyWordsReader = new KeyWordsFileReader();
+		keyWordsReader = new KeyWordsFileReader(url);
 		keywordsListOnFile = null;
 		keywordsListOnFile = keyWordsReader.getListFromFile();
 
