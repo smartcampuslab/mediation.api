@@ -64,7 +64,7 @@ public class MediationParserImpl {
 
 			before = System.currentTimeMillis();
 			String keyword = x.get(i);
-			isApproved = (testoentity.indexOf(keyword) == -1);
+			isApproved = (testoentity.toLowerCase().indexOf(keyword) == -1);
 			i++;
 			if (!isApproved) {
 				messageToMediationService.setKeywordApproved(isApproved);
