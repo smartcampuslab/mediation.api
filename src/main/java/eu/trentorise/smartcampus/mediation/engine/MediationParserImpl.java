@@ -91,11 +91,11 @@ public class MediationParserImpl {
 	}
 
 	public boolean remoteValidationComment(String testoentity, String identity,
-			Long userid, String token) throws SecurityException,
+			Long userid, String subject, String token) throws SecurityException,
 			ModeratorServiceException {
 
 		ContentToModeratorService messageToMediationService = new ContentToModeratorService(
-				webappname, identity, testoentity, String.valueOf(userid));
+				webappname, identity, testoentity, subject, String.valueOf(userid));
 
 		boolean isApproved = true;
 
