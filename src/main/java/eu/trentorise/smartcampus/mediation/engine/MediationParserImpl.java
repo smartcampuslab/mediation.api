@@ -90,7 +90,7 @@ public class MediationParserImpl {
 
 	}
 
-	public boolean remoteValidationComment(String testoentity, String identity,
+	public boolean remoteValidationCommentWithSubject(String testoentity, String identity,
 			Long userid, String subject, String token) throws SecurityException,
 			ModeratorServiceException {
 
@@ -105,6 +105,24 @@ public class MediationParserImpl {
 		return isApproved;
 
 	}
+	
+	
+	public boolean remoteValidationComment(String testoentity, String identity,
+			Long userid, String token) throws SecurityException,
+			ModeratorServiceException {
+
+		ContentToModeratorService messageToMediationService = new ContentToModeratorService(
+				webappname, identity, testoentity, String.valueOf(userid));
+
+		boolean isApproved = true;
+
+		messageToMediationService.setKeywordApproved(isApproved);
+		addCommentToMediationService(messageToMediationService, token);
+
+		return isApproved;
+
+	}
+	
 
 	private void addCommentToMediationService(
 			ContentToModeratorService messageToMediationService, String token)
