@@ -1,5 +1,6 @@
 package eu.trentorise.smartcampus.mediation.engine;
 
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,10 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 
 import eu.trentorise.smartcampus.mediation.util.KeyWordsFileReader;
 import eu.trentorise.smartcampus.moderatorservice.model.ContentToModeratorService;
@@ -37,12 +34,12 @@ public class MediationParserImpl {
 
 	}
 
-	public MediationParserImpl(String urlServermediation, String webappname, URL urlResource) {
+	public MediationParserImpl(String urlServermediation, String webappname, String urlResource) throws MalformedURLException {
 		super();
 		this.webappname = webappname;
 		this.urlServermediation = urlServermediation;
 		serModeratorService = new ModeratorService(urlServermediation);
-		this.url = urlResource;
+		this.url = new URL(urlResource);
 	}
 
 	public boolean localValidationComment(String testoentity, String identity,
