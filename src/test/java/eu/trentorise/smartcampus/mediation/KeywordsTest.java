@@ -19,14 +19,14 @@ public class KeywordsTest {
 	private String token;
 	private MediationParserImpl mediationParser;
 	private KeyWordsFileReader fileReader;
-	private URL url;
+	private String url;
 
 	@Before
 	public void init() throws MalformedURLException {
 		token = Constants.CLIENT_AUTH_TOKEN;
-		url = new URL(Constants.URL_FILE);
+		url = Constants.URL_FILE;
 		mediationParser = new MediationParserImpl(Constants.URL_MEDIATION_SERVICE, Constants.WEBAPP_NAME, url);
-		fileReader = new KeyWordsFileReader(url);
+		fileReader = new KeyWordsFileReader(new URL(url));
 	}
 
 	@Test
