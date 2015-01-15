@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -126,7 +125,7 @@ public class MediationParserImpl {
 						ContentToModeratorService  object = objects.get(0);
 						boolean keywordApproved = object.isKeywordApproved();
 						State manualApproved  = object.getManualApproved();
-						if (keywordApproved && manualApproved.equals(State.APPROVED)) {
+						if (keywordApproved && (manualApproved.equals(State.APPROVED) || manualApproved.equals(State.NOT_REQUEST))) {
 							result.put(id, true);
 						}
 						if (!keywordApproved || manualApproved.equals(State.NOT_APPROVED)) {
@@ -147,45 +146,6 @@ public class MediationParserImpl {
 		}
 		return result;
 	}
-
-	// new Version con credintial
-	public Map<String, Boolean> updateComment(long fromData, long toData, String token) {
-
-		try {
-
-			logger.info("client auth token: " + token);
-			List<ContentToModeratorService> listMessgae = serModeratorService
-					.getContentByDateWindow(token, webappname, fromData, toData);
-
-			Map<String, Boolean> returnMap = new HashMap<String, Boolean>();
-
-			Boolean resultApprove = false;
-			Iterator<ContentToModeratorService> index = listMessgae.iterator();
-
-			while (index.hasNext()) {
-				ContentToModeratorService object = index.next();
-
-				resultApprove = object.isKeywordApproved();
-				State valueBool = object.getManualApproved();
-
-				// if both of filters are true message moderation was positive
-				resultApprove = resultApprove
-						&& (valueBool.compareTo(State.APPROVED) == 0
-								|| valueBool.compareTo(State.WAITING) == 0 || valueBool
-								.compareTo(State.NOT_REQUEST) == 0); // object.getBoolean("parseApproved")&&
-
-				returnMap.put(object.getObjectId(), resultApprove);
-			}
-
-			return returnMap;
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 
 	public boolean resetKeyWords() {
 		
