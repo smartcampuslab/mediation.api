@@ -129,7 +129,7 @@ public class MediationParserImpl {
 							result.put(id, true);
 						}
 						if (!keywordApproved || manualApproved.equals(State.NOT_APPROVED)) {
-							result.put(id, true);
+							result.put(id, false);
 						}
 					} else {
 						// not found: consider approved
